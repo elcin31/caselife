@@ -1,4 +1,4 @@
-"""Import our original photographic contact sheets. Arguments: cover, cast, scenes, objects, interiors."""
+"""Import our original photographic contact sheets. Arguments: cover, cast, scenes, objects, interiors, papers."""
 from PIL import Image
 from pathlib import Path
 import sys
@@ -18,3 +18,5 @@ export(sys.argv[2],3,2,'orlov raisa sergey nina petr lida')
 export(sys.argv[3],2,3,'study hall parlor street records bank')
 export(sys.argv[4],4,4,'letter recorder radiator latch clock coat family telephone ticket receipt ledger envelope payment stamp cassette crew')
 export(sys.argv[5],2,2,'office interview board drawers')
+
+export(sys.argv[6],2,3,'report torn dispatch equity signatures plan')
