@@ -1,16 +1,81 @@
-import {game,head,card,btn,nav,photo,icon,esc,modal} from './kit'
-export function mapView(){return head('ПОЛЕВАЯ РАБОТА','Карта расследования','Выберите место для осмотра.')+'<div class="grid">'+game.file.places.map((p,i)=>game.ready(p.needs)?card('go:place/'+p.id,p.art,p.area,p.name,game.g.locations.includes(p.id)?'Осмотр начат':'Доступно для осмотра'):`<div class="locked">${icon('lock')}<div><small>МЕСТО 0${i+1}</small><h3>${p.name}</h3><p>Запрос откроется после изучения письма Орлова.</p></div></div>`).join('')+'</div>'}
-export function placeView(id:string){const p=game.file.places.find(x=>x.id===id);if(!p||!game.visit(id))return mapView()
- const clues=game.file.evidence.filter(e=>e.place===id&&game.ready(e.needs))
- return head(p.area,p.name,p.text)+`<div class="scene">${photo(p.art,p.name)}${clues.map((e,i)=>`<button class="hot ${game.g.items.includes(e.id)?'found':''}" data-act="inspect:${e.id}" style="left:${e.x}%;top:${e.y}%" aria-label="Осмотреть: ${e.object}">${game.g.items.includes(e.id)?'✓':i+1}</button>`).join('')}</div><div class="sectiontitle"><h2>Предметы осмотра</h2>${btn('zoom:'+p.art,'Увеличить','','eye')}</div><div class="rows">${clues.map((e,i)=>`<button class="row" data-act="inspect:${e.id}"><small>0${i+1}</small><b>${e.object}</b>${icon(game.g.items.includes(e.id)?'check':'up')}</button>`).join('')}</div>${nav('map','К карте','','back')}`}
-export function inspect(id:string,deep=false){const e=game.file.evidence.find(x=>x.id===id);if(!e||!game.g.locations.includes(e.place)||!game.ready(e.needs))return
- const full=deep||game.g.items.includes(id)||!e.detail
- modal(full?e.name:e.object,`${photo(e.art,e.name,'exhibit')}<div class="paper"><small>${e.source}</small><p>${full?e.text:e.observation}</p></div><div class="actions">${full?(game.g.items.includes(id)?btn('close','Вернуться к осмотру','','check'):btn('collect:'+id,'Приобщить к делу','primary','folder')):btn('deep:'+id,e.detail!,'primary','eye')}${btn('zoom:'+e.art,'Увеличить снимок','','eye')}</div>`)}
-export function peopleView(){return head('ТЕЛЕФОННАЯ КНИГА','Досье и допросы','Выберите собеседника. Новые документы дают повод для повторного разговора.')+`<div class="grid portraits">${game.file.people.map(p=>card('go:person/'+p.id,p.art,p.role,p.name)).join('')}</div>`}
-export function personView(id:string){const p=game.file.people.find(x=>x.id===id);if(!p||!game.contact(id))return peopleView()
- const topics=p.topics.filter(t=>game.available(t))
- return head('ПРОТОКОЛ БЕСЕДЫ',p.name)+`<section class="bio">${photo(p.art,p.name)}<div><small>${p.role}</small><p>${p.text}</p><p class="muted">${p.interest}</p></div></section><div class="sectiontitle"><h2>Темы разговора</h2></div><div class="rows">${topics.map(t=>`<button class="row talk" data-act="ask:${p.id}/${t.id}">${icon(t.exhibit?'file':'person')}<div>${t.exhibit?`<small>Предъявить · ${game.file.evidence.find(e=>e.id===t.exhibit)?.name}</small>`:''}<b>${t.ask}</b></div>${icon(game.g.talk.includes(t.id)?'check':'arrow')}</button>`).join('')}</div>${nav('people','К контактам','','back')}`}
-export function answer(person:string,id:string){const p=game.file.people.find(x=>x.id===person)!,t=p.topics.find(x=>x.id===id);if(!t||!game.ask(person,id))return
- modal('Протокол беседы',`<div class="dialogue">${photo(p.art,p.name)}<div><small>${p.role}</small><h3>${esc(p.name)}</h3></div></div><p class="kicker">ВОПРОС ДЕТЕКТИВА</p><p>${t.ask}</p><blockquote>${t.answer}</blockquote>${t.note?`<div class="paper"><small>${t.quality||'Наблюдение'}</small><p>${t.note}</p></div>`:''}${btn('close','К вопросам','','back')}`)}
-export function documents(){const g=game.g;return head('ДЕЛО № 001','Архив документов','Подлинники, копии и протоколы, приобщённые к делу.')+`<div class="rows"><button class="row" data-act="brief">${icon('file')}<b>Первичный протокол</b>${icon('up')}</button>${g.items.map(id=>{const e=game.file.evidence.find(x=>x.id===id)!;return `<button class="row" data-act="deep:${id}">${photo(e.art)}<div><small>${e.source}</small><b>${e.name}</b></div>${icon('up')}</button>`}).join('')}${game.file.people.flatMap(p=>p.topics.filter(t=>g.talk.includes(t.id)).map(t=>`<button class="row" data-act="ask:${p.id}/${t.id}">${icon('person')}<div><small>${p.name}</small><b>${t.ask}</b></div>${icon('up')}</button>`)).join('')}</div>`}
-
+import { game, head, card, btn, nav, photo, icon, esc, modal } from './kit'
+export function mapView() {
+  return (
+    head('ПОЛЕВАЯ РАБОТА', 'Карта расследования', 'Выберите место для осмотра.') +
+    '<div class="grid">' +
+    game.file.places
+      .map((p, i) =>
+        game.ready(p.needs)
+          ? card(
+              'go:place/' + p.id,
+              p.art,
+              p.area,
+              p.name,
+              game.g.locations.includes(p.id) ? 'Осмотр начат' : 'Доступно для осмотра',
+            )
+          : `<div class="locked">${icon('lock')}<div><small>МЕСТО 0${i + 1}</small><h3>${p.name}</h3><p>Запрос откроется после изучения письма Орлова.</p></div></div>`,
+      )
+      .join('') +
+    '</div>'
+  )
+}
+export function placeView(id: string) {
+  const p = game.file.places.find((x) => x.id === id)
+  if (!p || !game.visit(id)) return mapView()
+  const clues = game.file.evidence.filter((e) => e.place === id && game.ready(e.needs))
+  return (
+    head(p.area, p.name, p.text) +
+    `<div class="scene">${photo(p.art, p.name)}${clues.map((e, i) => `<button class="hot ${game.g.items.includes(e.id) ? 'found' : ''}" data-act="inspect:${e.id}" style="left:${e.x}%;top:${e.y}%" aria-label="Осмотреть: ${e.object}">${game.g.items.includes(e.id) ? '✓' : i + 1}</button>`).join('')}</div><div class="sectiontitle"><h2>Предметы осмотра</h2>${btn('zoom:' + p.art, 'Увеличить', '', 'eye')}</div><div class="rows">${clues.map((e, i) => `<button class="row" data-act="inspect:${e.id}"><small>0${i + 1}</small><b>${e.object}</b>${icon(game.g.items.includes(e.id) ? 'check' : 'up')}</button>`).join('')}</div>${nav('map', 'К карте', '', 'back')}`
+  )
+}
+export function inspect(id: string, deep = false) {
+  const e = game.file.evidence.find((x) => x.id === id)
+  if (!e || !game.g.locations.includes(e.place) || !game.ready(e.needs)) return
+  const full = deep || game.g.items.includes(id) || !e.detail
+  modal(
+    full ? e.name : e.object,
+    `${photo(full ? e.art : ({ expert: 'radiator', call: 'telephone', scrap: 'envelope' } as Record<string, string>)[id] || e.art, e.name, 'exhibit')}<div class="paper"><small>${e.source}</small><p>${full ? e.text : e.observation}</p></div><div class="actions">${full ? (game.g.items.includes(id) ? btn('close', 'Вернуться к осмотру', '', 'check') : btn('collect:' + id, 'Приобщить к делу', 'primary', 'folder')) : btn('deep:' + id, e.detail!, 'primary', 'eye')}${btn('zoom:' + e.art, 'Увеличить снимок', '', 'eye')}</div>`,
+  )
+}
+export function peopleView() {
+  return (
+    head(
+      'ТЕЛЕФОННАЯ КНИГА',
+      'Досье и допросы',
+      'Выберите собеседника. Новые документы дают повод для повторного разговора.',
+    ) +
+    `<div class="grid portraits">${game.file.people.map((p) => card('go:person/' + p.id, p.art, p.role, p.name)).join('')}</div>`
+  )
+}
+export function personView(id: string) {
+  const p = game.file.people.find((x) => x.id === id)
+  if (!p || !game.contact(id)) return peopleView()
+  const topics = p.topics.filter((t) => game.available(t))
+  return (
+    head('ПРОТОКОЛ БЕСЕДЫ', p.name) +
+    `<section class="bio">${photo(p.art, p.name)}<div><small>${p.role}</small><p>${p.text}</p><p class="muted">${p.interest}</p></div></section><div class="sectiontitle"><h2>Темы разговора</h2></div><div class="rows">${topics.map((t) => `<button class="row talk" data-act="ask:${p.id}/${t.id}">${icon(t.exhibit ? 'file' : 'person')}<div>${t.exhibit ? `<small>Предъявить · ${game.file.evidence.find((e) => e.id === t.exhibit)?.name}</small>` : ''}<b>${t.ask}</b></div>${icon(game.g.talk.includes(t.id) ? 'check' : 'arrow')}</button>`).join('')}</div>${nav('people', 'К контактам', '', 'back')}`
+  )
+}
+export function answer(person: string, id: string) {
+  const p = game.file.people.find((x) => x.id === person)!,
+    t = p.topics.find((x) => x.id === id)
+  if (!t || !game.ask(person, id)) return
+  modal(
+    'Протокол беседы',
+    `<div class="dialogue">${photo(p.art, p.name)}<div><small>${p.role}</small><h3>${esc(p.name)}</h3></div></div><p class="kicker">ВОПРОС ДЕТЕКТИВА</p><p>${t.ask}</p><blockquote>${t.answer}</blockquote>${t.note ? `<div class="paper"><small>${t.quality || 'Наблюдение'}</small><p>${t.note}</p></div>` : ''}${btn('close', 'К вопросам', '', 'back')}`,
+  )
+}
+export function documents() {
+  const g = game.g
+  return (
+    head('ДЕЛО № 001', 'Архив документов', 'Подлинники, копии и протоколы, приобщённые к делу.') +
+    `<div class="rows"><button class="row" data-act="brief">${icon('file')}<b>Первичный протокол</b>${icon('up')}</button>${g.items
+      .map((id) => {
+        const e = game.file.evidence.find((x) => x.id === id)!
+        return `<button class="row" data-act="deep:${id}">${photo(e.art)}<div><small>${e.source}</small><b>${e.name}</b></div>${icon('up')}</button>`
+      })
+      .join(
+        '',
+      )}${game.file.people.flatMap((p) => p.topics.filter((t) => g.talk.includes(t.id)).map((t) => `<button class="row" data-act="ask:${p.id}/${t.id}">${icon('person')}<div><small>${p.name}</small><b>${t.ask}</b></div>${icon('up')}</button>`)).join('')}</div>`
+  )
+}

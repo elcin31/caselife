@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build && node tools/offline.mjs",
-    "test": "node --import tsx --test tests/engine.test.ts",
+    "test": "node --import tsx tests/engine.test.ts",
     "android": "npm run build && cap sync android"
   },
   "dependencies": {

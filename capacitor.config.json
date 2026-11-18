@@ -1,1 +1,9 @@
-{"appId":"ru.casefile.archive","appName":"CASEFILE","webDir":"dist","android":{"allowMixedContent":false}}
+{
+  "appId": "ru.casefile.archive",
+  "appName": "CASEFILE",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false,
+    "adjustMarginsForEdgeToEdge": "auto"
+  }
+}
