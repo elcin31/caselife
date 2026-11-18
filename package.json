@@ -1,0 +1,23 @@
+{
+  "name": "casefile-rechensk",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build && node tools/offline.mjs",
+    "test": "node --import tsx --test tests/engine.test.ts",
+    "android": "npm run build && cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "7.4.3",
+    "@capacitor/app": "7.1.0",
+    "@capacitor/core": "7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "7.4.3",
+    "typescript": "5.8.3",
+    "tsx": "4.20.5",
+    "vite": "6.4.1"
+  }
+}
