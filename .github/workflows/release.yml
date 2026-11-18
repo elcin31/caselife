@@ -1,0 +1,48 @@
+name: Publish tested APK
+on:
+  workflow_dispatch:
+    inputs:
+      build_run:
+        description: Successful main build run ID for version 1.0.0
+        required: true
+        type: string
+permissions:
+  actions: read
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BUILD_RUN: ${{ inputs.build_run }}
+    steps:
+      - name: Verify build identity
+        id: build
+        shell: bash
+        run: |
+          [[ "$BUILD_RUN" =~ ^[0-9]+$ ]]
+          gh api "repos/$GH_REPO/actions/runs/$BUILD_RUN" > run.json
+          jq -e '.conclusion == "success" and .head_branch == "main" and .path == ".github/workflows/build.yml"' run.json
+          echo "sha=$(jq -r .head_sha run.json)" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.build_run }}
+          name: CASEFILE-1.0.0-debug
+          path: package
+      - name: Publish APK from tested build
+        env:
+          SOURCE_SHA: ${{ steps.build.outputs.sha }}
+        run: |
+          cp package/app-debug.apk CASEFILE-1.0.0-debug.apk
+          sha256sum CASEFILE-1.0.0-debug.apk > SHA256SUMS
+          cat > notes.md <<'NOTES'
+          Дело № 001 «Последний свидетель» для Android и PWA.
+
+          [Играть в браузере](https://casefile-rechensk.vercel.app/)
+
+          Скачайте CASEFILE-1.0.0-debug.apk и откройте на Android. Это тестовая сборка с отладочной подписью. Регистрация не требуется. Все материалы входят в пакет. Контрольная сумма находится в SHA256SUMS.
+          NOTES
+          gh release create v1.0.0 CASEFILE-1.0.0-debug.apk SHA256SUMS --target "$SOURCE_SHA" --prerelease --title 'CASEFILE 1.0.0 — Последний свидетель (debug APK)' --notes-file notes.md
+
